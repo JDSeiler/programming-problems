@@ -10,13 +10,14 @@ that both pieces weight an even amount. Thus W = 2A + 2B or W = 2(A+B).
 W = 2(A+B) means W is even, but W is odd as a premise, this is a contradicition so W cannot be odd.
 */
 
-void main(void) {
+int main(void) {
     int weight;
     scanf("%d", &weight);
 
-    if (weight % 2 == 0) {
+    if (weight % 2 == 0 && weight != 2) {
         printf("YES\n");
     } else {
         printf("NO\n");
     }
+    return 0;
 }
