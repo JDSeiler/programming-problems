@@ -41,7 +41,7 @@ void abbrev(char* word) {
         snprintf(number_string, number_len+1, "%d", num);
 
         // Use calloc to init the memory for us, otherwise bad things happen
-        char* final_output = calloc(1, number_len+3);
+        char* final_output = (char*) calloc(1, number_len+3);
 
         // Squish it all together with strcat
         strcat(final_output, first_char);
@@ -59,7 +59,7 @@ int main(void) {
     scanf("%d", &num_words);
 
     // Note! Arrays of strings are 2D char arrays in C.
-    char words[num_words][100];
+    char words[num_words][101];
     for(int i=0; i<num_words; i++) {
         scanf("%s", words[i]);
     }
