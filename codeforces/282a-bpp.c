@@ -16,7 +16,7 @@ int main(void) {
     int instructions[num_instructions];
 
     for (int i=0; i<num_instructions; i++) {
-        char instruction[3];
+        char instruction[4];
         scanf("%s", instruction);
         if (strstr(instruction, "+")) {
             instructions[i] = 1;
