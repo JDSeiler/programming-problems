@@ -7,7 +7,7 @@ Would be fun to come back to this after I learn more C and see if I can solve
 this better. This solution will be over documented to help me solidify concepts.
 */
 
-void main(void) {
+int main(void) {
     char hand[15];
     char ranks[6];
     // Bracket looks like a regex, but isn't. It's a shorthand format specifier for a set of characters.
@@ -45,4 +45,5 @@ void main(void) {
     }
 
     printf("%d\n", best_score);
+    return 0;
 }

@@ -48,7 +48,7 @@ void create_equation(int buckets[], char output[]) {
     output[len-1] = '\0';
 }
 
-void main(void) {
+int main(void) {
     char output[100] = {'\0'};
     char input_equation[100];
     int buckets[3] = {0,0,0};
@@ -59,4 +59,5 @@ void main(void) {
 
     create_equation(buckets, output);
     printf("%s\n", output);
+    return 0;
 }  

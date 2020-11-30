@@ -10,10 +10,11 @@ left over (half a domino). Thus the answer is floor(M*N / 2). Integer division i
 all you have to do.
 */
 
-void main(void) {
+int main(void) {
     int m;
     int n;
     scanf("%d %d", &m, &n);
 
     printf("%d\n", (m*n) / 2);
+    return 0;
 }

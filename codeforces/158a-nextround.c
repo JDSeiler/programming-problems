@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void main(void) {
+int main(void) {
     int kth_place;
     int num_contestants;
 
@@ -31,4 +31,5 @@ void main(void) {
     }
 
     printf("%d\n", num_advancing);
+    return 0;
 }

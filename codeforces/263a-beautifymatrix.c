@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-void main(void) {
+int main(void) {
     int matrix[5][5];
 
     for (int i=0; i<5; i++) {
@@ -32,4 +32,5 @@ void main(void) {
     int y_diff = abs(3-(y+1));
 
     printf("%d\n", x_diff+y_diff);
+    return 0;
 }

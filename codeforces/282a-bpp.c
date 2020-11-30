@@ -9,7 +9,7 @@ int sum(int arr[], int size) {
     return acc;
 }
 
-void main(void) {
+int main(void) {
     int num_instructions;
     scanf("%d", &num_instructions);
 
@@ -27,4 +27,5 @@ void main(void) {
 
     int result = sum(instructions, num_instructions);
     printf("%d\n", result);
+    return 0;
 }

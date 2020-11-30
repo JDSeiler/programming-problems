@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <strings.h>
 
-void main(void) {
+int main(void) {
     char string1[100];
     char string2[100];
 
@@ -17,4 +17,5 @@ void main(void) {
         // Only option left is result == 0, which is fine as is.
     }
     printf("%d\n", result);
+    return 0;
 }

@@ -54,7 +54,7 @@ void abbrev(char* word) {
     }
 }
 
-void main(void) {
+int main(void) {
     int num_words;
     scanf("%d", &num_words);
 
@@ -67,4 +67,5 @@ void main(void) {
     for(int i=0; i<num_words; i++) {
         abbrev(words[i]);
     }
+    return 0;
 }
