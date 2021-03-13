@@ -14,6 +14,8 @@ def test(n):
     else:
         return "NO"
 
+test = "~/media/pictures/wallpapers/I-like-the-moon.jpg"
+
 cases = int(input())
 answers = []
 for i in range(0, cases):
