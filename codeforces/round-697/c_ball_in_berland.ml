@@ -1,17 +1,5 @@
-let print_list a =
-  let print_elem e =
-    print_int e;
-    print_string " "
-  in List.iter print_elem a;
-  print_newline ();;
-
-let print_tuple_list a =
-  let print_elem e =
-    let a,b = e in
-    Printf.printf "(%d, %d) " a b
-  in List.iter print_elem a;
-  print_newline ();;
-
+(* Codeforces old version of OCaml doesn't have the Int module *)
+(* So I have to patch one in for the purposes of using a Set *)
 module MyInt = struct
   type t = int
   let compare a b = 
@@ -23,7 +11,8 @@ module MyInt = struct
       0
 end
 
-module IntSet = Set.Make(Int)
+(* Functor magic, kind of like a generic package in Ada *)
+module IntSet = Set.Make(MyInt)
 
 (* 
 Represent the possible pairings as a Bipartite Graph, with Boys on one side and Girls on the other.
@@ -55,7 +44,7 @@ type constraints = {
 
 (* Ripped straight out of the Stdlib because this is only available since 4.05 *)
 (* But codeforces is using 4.02.... *)
-(* You -can- use a method from Str to split with a regex, but that could be slow. *)
+(* You -can- use a method from Str to split with a regex, but that appears to be slow? *)
 let split_on_char sep s =
    let r = ref [] in
    let j = ref (String.length s) in
@@ -77,15 +66,9 @@ let read_three_ints () =
     k = List.nth list 2;
   }
 
-(* So thankful there are lots of Haskell answers on stack overflow *)
-(* Filters a list down to its unique elements *)
-(* This could be really slow.... *)
-(* let rec uniq l =
-  match l with
-  | [] -> []
-  | h :: tl -> h :: uniq (List.filter (fun e -> e != h) tl);; *)
-
-(* Lets use a set instead *)
+(* Lets use a set instead, the Filter based implementation was O(n^2) *)
+(* This is a dirty hack, there are better & more functional ways to do it in O(n) *)
+(* I'm not smart enough for those ways yet *)
 let uniq l =
   IntSet.of_list l |> IntSet.elements
 
@@ -109,8 +92,7 @@ The dream:
 l => [1; 1; 1; 2; 3; 3;]
 returns = [(1, 3); (2, 1); (3, 2)]
 *)
-let compute_vertex_degree l size =
-  let keys = l in
+let compute_vertex_degree keys size =
   let assoc = init_assoc keys size in
   let increment k =
     update k assoc
@@ -131,21 +113,22 @@ let fetch_degree degree_array node =
   degree
 
 let sum list =
-  List.fold_left ( + ) 0 list
+  List.fold_left ( Int64.add ) 0L list
 
 let halve n =
-  n / 2
+  Int64.div n 2L
 
-let lookup_edge n edges =
-  Array.get edges (n-1)
-
+(* All the terms are small enough to use an int, but the sum can overflow, so convert to int64*) 
 let count_pairings edges b_degree g_degree k =
   let count_for_edge e =
     let b, g = e in
     let b_incident = (fetch_degree b_degree b) - 1 in
     let g_incident = (fetch_degree g_degree g) - 1 in
     (k-1) - (b_incident + g_incident)
-  in List.map count_for_edge edges |> sum |> halve;;
+  in List.map count_for_edge edges
+  |> List.map Int64.of_int
+  |> sum 
+  |> halve;;
 
 
 let num_cases = read_int () in
@@ -160,5 +143,5 @@ let process_test test_number =
   let b_degree = compute_vertex_degree bs constraints.a in
   let g_degree = compute_vertex_degree gs constraints.b in
   (* Compute the number *)
-  Printf.printf "%d\n" (count_pairings edges b_degree g_degree constraints.k)
+  Printf.printf "%Ld\n" (count_pairings edges b_degree g_degree constraints.k)
 in iter process_test num_cases
