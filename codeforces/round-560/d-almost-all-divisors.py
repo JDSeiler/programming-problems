@@ -33,7 +33,6 @@ def is_consistent(x, divisors):
 
     return True
 
-# Nah something is fundamentally wrong about this approach
 for _i in range(0, t):
     _num_divisors = input()
     divisors = list(map(int, input().split()))
