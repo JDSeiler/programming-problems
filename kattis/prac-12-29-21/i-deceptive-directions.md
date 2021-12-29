@@ -23,3 +23,15 @@ back on already explored cells.
 
 When we reach the last instruction the frontier is the set of all possible
 locations for the treasure.
+
+## Important Extra Detail
+The above algorithm is almost right, but it needs an extra detail.
+Your candidate results can only *optimal* paths. So if explore in a spiral,
+the end result of that path is invalid because there's a shorter way.
+
+To do this, you filter out candidate cells *during* the BFS by comparing
+the depth of your BFS to a precomputed "optimal path length" for that cell.
+
+So if you're considering exploring to a cell and you're at BFS depth 5 (you've
+taken 5 steps) but the optimal distance is 3, you know this path is
+incorrect and you shouldn't explore there.

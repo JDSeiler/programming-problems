@@ -1,8 +1,16 @@
 from collections import deque
 
 '''
-Something is wrong about this solution?
-I'm not sure what.
+This solution is missing an important detail! That's why it's wrong.
+
+The answer can only include optimal paths. So, for example, a spiral
+path would not be a correct way to get to the treasure. We know this
+because the problem statement says that the original directions went
+right to the treasure (there was no shorter path). So any candidate
+direction must be the result of a similarly optimal path. The current
+implementation just blindly explores without considering this fact.
+
+See my markdown notes for mor information.
 '''
 
 _w, h = list(map(int, input().split()))
