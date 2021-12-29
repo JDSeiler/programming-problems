@@ -1,5 +1,10 @@
 from collections import deque
 
+'''
+Something is wrong about this solution?
+I'm not sure what.
+'''
+
 _w, h = list(map(int, input().split()))
 
 island = []
