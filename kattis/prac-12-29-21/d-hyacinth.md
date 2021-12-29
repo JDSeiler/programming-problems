@@ -9,18 +9,47 @@ Link: https://open.kattis.com/contests/zf5dyh/problems/hyacinth
 Given a tree, your job is to output an assignment of numbers to nodes
 which maximizes the number of used frequencies.
 
-# Alternate phrasing and details
-This problem is edge coloring with an edge case and a condition.
+# Step 1: Rephrase the problem
+Given a tree of N nodes, find a maximal edge coloring where each
+edge may be colored with either one or two colors, and each node is
+adjacent to at most 2 colors.
 
-The condition is that each node can be adjacent to at most 2 colors.
+# Algorithm
+The trivial case is a tree of two nodes, we handle it separately. Color the
+only edge two unique colors of your choice.
 
-The edge case is a tree with only two nodes. In that case the optimal
-strategy is to "double-color" the edge. By assigning the same pair
-of numbers to both nodes. This is the only time double-coloring
-is necessary. Since in a larger graph any double coloring forces
-duplication on a nearby edge, so you're just "borrowing" a color
-from another edge.
+In all other cases, the algorithm is as follows:
+> If the root of the tree has only one child, re-root the tree by the original
+  root's only child. This will cause the new root of the tree to have 2 children.
+  If the root already has 2+ children this is unecessary.
 
+Then, proceed as follows:
+
+Begin at the root...
+
+For each outgoing (towards the leaves) edge of the current node:
+- If possible, give this edge a new unique color.
+- If the current node has two colors already, pick an arbitrary color already
+  in use by the current node for this edge.
+
+
+- If the node has no outgoing edges (is a leaf):
+  Assign it arbitrary colors until it has no free colors (if the algorithm
+  is correct it will be assigned exactly one extra free color)
+
+**Alternate way to handle 1-child roots**
+> If all edges are colored and the current node still has a free color, repeat
+  the process until the current node has no free colors. (This will really
+  only ever happen when the root has 1 child node)
+
+Repeat the process for each child node.
+
+Once we have the edge coloring it is trivial to reconstruct the "frequencies"
+that the problem requests. Since the assigned frequencies for each node are simply
+the colors that it is adjacent to. Alternately, you may track these frequencies
+as they're assigned (as the edges are colored) and output them at the end.
+
+# Old Notes
 ## Branching Factor
 The ratio of colors to nodes depends on the branching factor of the tree.
 For a line graph of n nodes, the number of colors is n-1 since you can uniquely
@@ -34,8 +63,8 @@ some internal node J:
   of its children. However, subsequent edges must reuse one of the numbers
   already present on J.
 
-This leads to an important observation: every internal node contributes
-exactly one unique edge color.
+This leads to an important observation:
+**every internal node contributes exactly one unique edge color.**
 
 The exception to this pattern is the root of the tree. Since the root has
 no parents, all colors it assigns are unique. The amount of unique numbers
@@ -84,24 +113,3 @@ colors are:
 - 7
 
 The formula predicts 6 colors. 4 from the 4 internal nodes and 2 from the root.
-
-# Algorithm
-For each node, we track the two numbers assigned to it.
-We also maintain a global list of all used edge colors.
-
-Begin at the root...
-
-For each outgoing (towards the leaves) edge of the current node:
-- If possible, give this edge a new unique color.
-    - When a color is assigned, add that color to both adjacent nodes' list
-- If the current node has two colors already, pick an arbitrary color already
-  in use by the current node for this edge.
-- If all edges are colored and the current node still has a free color, repeat
-  the process until the current node has no free colors. (This will really
-  only ever happen when the root has 1 child node)
-
-IF the node has no outgoing edges (is a leaf):
-Assign it arbitrary colors until it has no free colors (if the algorithm
-is correct it will be assigned exactly one extra free color)
-
-Repeat the process for each child node.
