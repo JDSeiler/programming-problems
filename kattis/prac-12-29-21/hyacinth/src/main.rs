@@ -2,6 +2,13 @@ use std::io::{self};
 use std::collections::VecDeque;
 
 /**
+ * This solution is not correct. There is some edge case causing a run-time error
+ * on Kattis but I can't think of what it is yet. Otherwise this handles all of the test
+ * cases present as .txt files included with the source code.
+ */
+
+
+/**
  * Data Structure Stuff
  */
 
