@@ -14,6 +14,10 @@ Given a tree of N nodes, find a maximal edge coloring where each
 edge may be colored with either one or two colors, and each node is
 adjacent to at most 2 colors.
 
+Note that this is not a "true" edge coloring because we allow incident edges
+with the same color. But it is an edge coloring in the sense that we're assigning
+colors to edges.
+
 # Algorithm
 The trivial case is a tree of two nodes, we handle it separately. Color the
 only edge two unique colors of your choice.
