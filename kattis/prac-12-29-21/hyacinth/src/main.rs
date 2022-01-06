@@ -5,6 +5,11 @@ use std::collections::VecDeque;
  * This solution is not correct. There is some edge case causing a run-time error
  * on Kattis but I can't think of what it is yet. Otherwise this handles all of the test
  * cases present as .txt files included with the source code.
+ * 
+ * badroot.txt is a breaking case!
+ * The issue is either:
+ * - How I select the root
+ * - How I'm implcitely directing the edges with add_edge
  */
 
 
@@ -274,7 +279,10 @@ fn main() {
     
         // println!("Post-Reroot Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
         tree.color_edges();
-    
+        
+        println!("Colored Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
+
+
         print_colors(&tree);
     }
 }
