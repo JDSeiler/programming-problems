@@ -1,17 +1,14 @@
+use std::collections::{HashSet, VecDeque};
 use std::io::{self};
-use std::collections::VecDeque;
 
 /**
- * This solution is not correct. There is some edge case causing a run-time error
- * on Kattis but I can't think of what it is yet. Otherwise this handles all of the test
- * cases present as .txt files included with the source code.
- * 
- * badroot.txt is a breaking case!
- * The issue is either:
- * - How I select the root
- * - How I'm implcitely directing the edges with add_edge
- */
-
+Originally this solution was not correct but I've since corrected it and
+now it passes the tests on Kattis. There were two bugs:
+1. My initial implementation of the tree implicitely directed the edges
+   which was a huge oversight.
+2. My backing array was 1 element too short because I'm 1-indexing the nodes,
+   which is what the problem description does.
+*/
 
 /**
  * Data Structure Stuff
@@ -21,8 +18,7 @@ use std::collections::VecDeque;
 struct Node {
     idx: usize,
     colors: [Option<i32>; 2],
-    parent: Option<usize>,
-    children: Vec<usize>,
+    neighbors: Vec<usize>,
 }
 
 impl Node {
@@ -30,8 +26,7 @@ impl Node {
         Node {
             idx: idx,
             colors: [None, None],
-            parent: None,
-            children: Vec::new(),
+            neighbors: Vec::new(),
         }
     }
 }
@@ -39,7 +34,6 @@ impl Node {
 #[derive(Debug)]
 struct Tree {
     nodes: Vec<Option<Node>>,
-    root: Option<usize>,
 }
 
 impl Tree {
@@ -47,49 +41,78 @@ impl Tree {
         // This is kind of like making an array of 10,000 elements in Java
         // Except Rust really doesn't like you allocating raw arrays, so we
         // make a giant Vec and fill it with a sentinel (None)
-        let mut node_vec = Vec::with_capacity(10_000);
-        node_vec.resize_with(10_000, || None);
+        let mut node_vec = Vec::with_capacity(10_500);
+        node_vec.resize_with(10_500, || None);
 
-        Tree {
-            nodes: node_vec,
-            root: None,
+        Tree { nodes: node_vec }
+    }
+
+    // fn add_directional_edge(&mut self, u_idx: usize, v_idx: usize) {
+    //     match self.nodes.get_mut(u_idx).unwrap() {
+    //         Some(u) => {
+    //             u.neighbors.push(v_idx);
+    //         }
+    //         None => {
+    //             let mut new_node = Node::new(u_idx);
+    //             new_node.neighbors.push(v_idx);
+
+    //             self.nodes[u_idx] = Some(new_node);
+    //         }
+    //     }
+    // }
+
+    fn add_edge(&mut self, u_idx: usize, v_idx: usize) {
+        // self.add_directional_edge(u_idx, v_idx);
+        // self.add_directional_edge(v_idx, u_idx);
+        match self.nodes.get_mut(u_idx).unwrap() {
+            Some(u) => {
+                u.neighbors.push(v_idx);
+            }
+            None => {
+                let mut new_node = Node::new(u_idx);
+                new_node.neighbors.push(v_idx);
+
+                self.nodes[u_idx] = Some(new_node);
+            }
+        }
+
+        match self.nodes.get_mut(v_idx).unwrap() {
+            Some(v) => {
+                v.neighbors.push(u_idx);
+            }
+            None => {
+                let mut new_node = Node::new(v_idx);
+                new_node.neighbors.push(u_idx);
+
+                self.nodes[v_idx] = Some(new_node);
+            }
         }
     }
 
-    fn add_edge(&mut self, start: usize, end: usize) {
-        match self.nodes.get_mut(start).unwrap() {
-            Some(v) => {
-                v.children.push(end);
-            }
-            None => {
-                let mut new_parent_node = Node::new(start);
-                new_parent_node.children.push(end);
-
-                self.nodes[start] = Some(new_parent_node);
-            }
-        }
-
-        match self.nodes.get_mut(end).unwrap() {
-            Some(v) => {
-                v.parent = Some(start);
-            }
-            None => {
-                let mut new_child_node = Node::new(end);
-                new_child_node.parent = Some(start);
-
-                self.nodes[end] = Some(new_child_node);
-            }
-        }
-    }
-
-    fn compute_root(&mut self) {
-        let root = self
-            .nodes
+    fn compute_root(&mut self) -> Option<usize> {
+        self.nodes
             .iter()
             .find_map(|n| n.as_ref())
-            .map_or(None, |n| Some(n.idx));
+            .map_or(None, |n| Some(n.idx))
+    }
 
-        self.root = root;
+    fn has_unsightly_root(&self, candidate_root: usize) -> bool {
+        if let Some(node) = self.get(candidate_root) {
+            return node.neighbors.len() == 1;
+        } else {
+            // As long as we check that the compute_root returns Some
+            // then this is true.
+            unreachable!();
+        }
+    }
+
+    fn get_new_root(&self, unsightly_root: usize) -> usize {
+        if let Some(node) = self.get(unsightly_root) {
+            return *node.neighbors.get(0).unwrap();
+        } else {
+            // This is also fine as long as we... yknow.. use the function right...
+            unreachable!();
+        }
     }
 
     fn get(&self, idx: usize) -> Option<&Node> {
@@ -100,62 +123,12 @@ impl Tree {
         self.nodes.get_mut(idx).unwrap().as_mut()
     }
 
-    fn has_unsightly_root(&self) -> bool {
-        let root = self.root.expect("Rootless tree!");
-        if let Some(node) = self.get(root) {
-            return node.children.len() == 1;
-        } else {
-            // We know this is unreachable because we're doing that silly
-            // Vector where we've pre-filled 10,000 elements.
-            // Plus we know that if self.root() doesn't return None
-            // the node MUST exist.
-            unreachable!();
-        }
-    }
-
-    fn reroot(&mut self) -> Option<usize> {
-        if let Some(root) = self.root {
-            /*
-             * Bear with me:
-             * We need to mutably borrow two different elements out of the collection
-             * We cannot do that in the same scope because that would introduce two
-             * mutable references int the same scope. So we COMPLETELY update the root
-             * node first in its own scope so that the references drop
-             * 
-             * Then we update the other node entirely in its own scope.
-             * 
-             * This is *probably* an anti-pattern that I've walked into because the whole
-             * Vec::resize_with(10,000, || None) business is... unsavory
-             * 
-             * We compute the child_idx first because usize implements Copy and
-             * so it doesn't interfere with the memory semantics.
-             */
-            let child_idx = self.nodes[root].as_ref().unwrap().children[0];
-            {
-                let root_node = self.nodes[root].as_mut().unwrap();
-                root_node.parent = Some(child_idx);
-
-                if root_node.children.len() > 1 {
-                    panic!("Clearing root children when there is more than one!");
-                }
-                root_node.children.clear();
-            }
-            let child_node = self.nodes[child_idx].as_mut().unwrap();
-
-            child_node.parent = None;
-            child_node.children.push(root);
-
-            self.root = Some(child_idx);
-            return Some(child_idx);
-        } else {
-            return None;
-        }
-    }
-
-    fn color_edges(&mut self) {
+    fn color_edges(&mut self, root: usize) {
         let mut to_process: VecDeque<usize> = VecDeque::new();
         // usize is Copy so mutating curr_node does not mutate self.root
-        to_process.push_back(self.root.expect("Compute the root before coloring!"));
+        to_process.push_back(root);
+
+        let mut visited: HashSet<usize> = HashSet::new();
 
         let mut next_color = 1;
 
@@ -167,7 +140,12 @@ impl Tree {
             // from self.get to go away, so that we can mutate each child.
             // A better API from Tree would avoid this. But I don't have time
             // for that.
-            let children = self.get(curr_node).unwrap().children.as_slice().to_owned();
+            let neighbors = self.get(curr_node).unwrap().neighbors.as_slice().to_owned();
+            let children: Vec<usize> = neighbors
+                .iter()
+                .filter(|n| !visited.contains(*n))
+                .copied()
+                .collect();
 
             if children.len() == 0 {
                 let this_leaf_node = self.get_mut(curr_node).unwrap();
@@ -195,8 +173,9 @@ impl Tree {
 
                 to_process.push_back(child)
             }
-        }
 
+            visited.insert(curr_node);
+        }
     }
 }
 
@@ -221,11 +200,13 @@ fn open_slot(colors: [Option<i32>; 2]) -> Option<usize> {
 }
 
 fn print_colors(tree: &Tree) {
-    let actual_nodes = tree.nodes.iter()
+    let actual_nodes = tree
+        .nodes
+        .iter()
         .filter(|n| n.is_some())
         .map(|n| n.as_ref().unwrap())
         .collect::<Vec<&Node>>();
-    
+
     for node in actual_nodes {
         println!("{} {}", node.colors[0].unwrap(), node.colors[1].unwrap());
     }
@@ -271,17 +252,22 @@ fn main() {
         println!("1 2");
         println!("2 1");
     } else {
-        tree.compute_root();
-    
-        if tree.has_unsightly_root() {
-            tree.reroot();
-        }
-    
-        // println!("Post-Reroot Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
-        tree.color_edges();
-        
-        println!("Colored Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
+        let mut candidate_root = tree.compute_root().expect("Expected a root, got nothing!");
 
+        if tree.has_unsightly_root(candidate_root) {
+            candidate_root = tree.get_new_root(candidate_root);
+        }
+
+        // println!("Post-Reroot Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
+        tree.color_edges(candidate_root);
+
+        // println!(
+        //     "Colored Tree is: {:#?}",
+        //     tree.nodes
+        //         .iter()
+        //         .filter(|n| n.is_some())
+        //         .collect::<Vec<&Option<Node>>>()
+        // );
 
         print_colors(&tree);
     }
