@@ -47,23 +47,7 @@ impl Tree {
         Tree { nodes: node_vec }
     }
 
-    // fn add_directional_edge(&mut self, u_idx: usize, v_idx: usize) {
-    //     match self.nodes.get_mut(u_idx).unwrap() {
-    //         Some(u) => {
-    //             u.neighbors.push(v_idx);
-    //         }
-    //         None => {
-    //             let mut new_node = Node::new(u_idx);
-    //             new_node.neighbors.push(v_idx);
-
-    //             self.nodes[u_idx] = Some(new_node);
-    //         }
-    //     }
-    // }
-
-    fn add_edge(&mut self, u_idx: usize, v_idx: usize) {
-        // self.add_directional_edge(u_idx, v_idx);
-        // self.add_directional_edge(v_idx, u_idx);
+    fn add_directional_edge(&mut self, u_idx: usize, v_idx: usize) {
         match self.nodes.get_mut(u_idx).unwrap() {
             Some(u) => {
                 u.neighbors.push(v_idx);
@@ -75,18 +59,11 @@ impl Tree {
                 self.nodes[u_idx] = Some(new_node);
             }
         }
+    }
 
-        match self.nodes.get_mut(v_idx).unwrap() {
-            Some(v) => {
-                v.neighbors.push(u_idx);
-            }
-            None => {
-                let mut new_node = Node::new(v_idx);
-                new_node.neighbors.push(u_idx);
-
-                self.nodes[v_idx] = Some(new_node);
-            }
-        }
+    fn add_edge(&mut self, u_idx: usize, v_idx: usize) {
+        self.add_directional_edge(u_idx, v_idx);
+        self.add_directional_edge(v_idx, u_idx);
     }
 
     fn compute_root(&mut self) -> Option<usize> {
@@ -96,6 +73,9 @@ impl Tree {
             .map_or(None, |n| Some(n.idx))
     }
 
+    /**
+     * An "unsightly root" is a root with only one neighbor.
+     */
     fn has_unsightly_root(&self, candidate_root: usize) -> bool {
         if let Some(node) = self.get(candidate_root) {
             return node.neighbors.len() == 1;
@@ -106,6 +86,12 @@ impl Tree {
         }
     }
 
+    /**
+     * We don't want to deal with processing roots with only one child.
+     * So we make the new root (start the traversal from) the only child
+     * of the unsightly root. This ensures that so long as the tree has 3 or more
+     * nodes in it, the root will have 2 children.
+     */
     fn get_new_root(&self, unsightly_root: usize) -> usize {
         if let Some(node) = self.get(unsightly_root) {
             return *node.neighbors.get(0).unwrap();
@@ -144,7 +130,7 @@ impl Tree {
             let children: Vec<usize> = neighbors
                 .iter()
                 .filter(|n| !visited.contains(*n))
-                .copied()
+                .copied() // The only purpose of this is to covert from Vec<&usize> to Vec<usize>
                 .collect();
 
             if children.len() == 0 {
@@ -163,6 +149,8 @@ impl Tree {
                     parent_node.colors[color_slot] = Some(next_color);
 
                     // Ugly hack, pretend that parent_colors is by reference :)
+                    // Really, the NODE has a copy and we've got a copy floating
+                    // around for the algorithm. Gotta update both.
                     parent_colors[color_slot] = Some(next_color);
 
                     next_color += 1;
@@ -247,7 +235,6 @@ fn main() {
             _ => unreachable!(),
         }
     }
-    // println!("Pre-Reroot Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
     if n == 2 {
         println!("1 2");
         println!("2 1");
@@ -258,7 +245,6 @@ fn main() {
             candidate_root = tree.get_new_root(candidate_root);
         }
 
-        // println!("Post-Reroot Tree is: {:#?}", tree.nodes.iter().filter(|n| n.is_some()).collect::<Vec<&Option<Node>>>());
         tree.color_edges(candidate_root);
 
         // println!(
