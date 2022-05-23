@@ -74,7 +74,35 @@ macro_rules! read_vec {
     };
 }
 
+/**
+Reads a line of input, splits it on whitespace, and parses each value into the specified type.
+The values are then matched into a 2-element tuple using slice matching.
+```rs
+let (a,b) = read_pair!(usize);
+```
+*/
+#[allow(unused_macros)]
+macro_rules! read_pair {
+    ($type:ty) => {
+        {
+            let mut inner = String::new();
+            std::io::stdin().read_line(&mut inner).unwrap();
+            let v = inner
+                .trim()
+                .split_whitespace()
+                .map(|s| s.parse::<$type>().unwrap())
+                .collect::<Vec<$type>>();
+            let (a, b) = match &v[..] {
+                &[f, s, ..] => (f, s),
+                _ => unreachable!()
+            };
+            (a,b)
+        }
+    };
+}
+
 pub(crate) use read;
 pub(crate) use read_str;
 pub(crate) use read_vec;
+pub(crate) use read_pair;
 
