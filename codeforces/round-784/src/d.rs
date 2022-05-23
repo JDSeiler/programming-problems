@@ -1,4 +1,3 @@
-
 pub fn main() {
     let t = read!(u64);
     for _i in 0..t {
@@ -33,7 +32,7 @@ fn compress(picture: &str) -> String {
     for i in 0..chars.len() {
         let this_char = chars[i];
 
-        if i == chars.len()-1 {
+        if i == chars.len() - 1 {
             // NORMALLY, when this_char != last_char, we add the last_char
             // So we have to tack on this extra condition so that we don't miss it.
             if last_char != this_char {
@@ -67,13 +66,16 @@ let my_float = read!(f64);
  */
 #[allow(unused_macros)]
 macro_rules! read {
-    ($type:ty) => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).expect("read! was unable to read from stdin");
-            inner.trim().parse::<$type>().expect("read! was unable to parse into the desired type")
-        }
-    };
+    ($type:ty) => {{
+        let mut inner = String::new();
+        std::io::stdin()
+            .read_line(&mut inner)
+            .expect("read! was unable to read from stdin");
+        inner
+            .trim()
+            .parse::<$type>()
+            .expect("read! was unable to parse into the desired type")
+    }};
 }
 
 /**
@@ -81,13 +83,13 @@ Reads a full line of input and returns it as a `&str`.
  */
 #[allow(unused_macros)]
 macro_rules! read_str {
-    () => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).expect("read_str! was unable to read from stdin");
-            inner.trim().to_owned()
-        }
-    };
+    () => {{
+        let mut inner = String::new();
+        std::io::stdin()
+            .read_line(&mut inner)
+            .expect("read_str! was unable to read from stdin");
+        inner.trim().to_owned()
+    }};
 }
 
 /**
@@ -99,17 +101,15 @@ let mut some_numbers: Vec<i64> = read_vec!(i64);
  */
 #[allow(unused_macros)]
 macro_rules! read_vec {
-    ($type:ty) => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).unwrap();
-            inner
-                .trim()
-                .split_whitespace()
-                .map(|s| s.parse::<$type>().unwrap())
-                .collect::<Vec<$type>>()
-        }
-    };
+    ($type:ty) => {{
+        let mut inner = String::new();
+        std::io::stdin().read_line(&mut inner).unwrap();
+        inner
+            .trim()
+            .split_whitespace()
+            .map(|s| s.parse::<$type>().unwrap())
+            .collect::<Vec<$type>>()
+    }};
 }
 
 pub(crate) use read;

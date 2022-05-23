@@ -3,7 +3,7 @@ use std::iter::FromIterator;
 #[derive(Copy, Clone, Debug, PartialEq)]
 enum Parity {
     Odd,
-    Even
+    Even,
 }
 
 // This is vestigial from when I was trying a solution with
@@ -13,7 +13,7 @@ enum Parity {
 struct ParityVector(Vec<Parity>);
 
 impl FromIterator<Parity> for ParityVector {
-    fn from_iter<I: IntoIterator<Item=Parity>>(iter: I) -> Self {
+    fn from_iter<I: IntoIterator<Item = Parity>>(iter: I) -> Self {
         let mut c = Vec::new();
 
         for i in iter {
@@ -24,20 +24,20 @@ impl FromIterator<Parity> for ParityVector {
     }
 }
 
-
 pub fn main() {
     let t = read!(u64);
     for i in 0..t {
         let n = read!(usize);
         let nums: Vec<u64> = read_vec!(u64);
 
-        let parity: ParityVector = nums.iter().map(|&n| {
-            match n % 2 {
+        let parity: ParityVector = nums
+            .iter()
+            .map(|&n| match n % 2 {
                 0 => Parity::Even,
                 1 => Parity::Odd,
-                _ => panic!("Impossible result mod 2")
-            }
-        }).collect();
+                _ => panic!("Impossible result mod 2"),
+            })
+            .collect();
 
         if is_all_same(&parity) {
             println!("YES")
@@ -75,7 +75,7 @@ fn is_all_same(ParityVector(p): &ParityVector) -> bool {
     } else {
         // If the array is empty, trivially everything is the same.
         is_all_same
-    }
+    };
 }
 
 /**
@@ -88,13 +88,16 @@ let my_float = read!(f64);
  */
 #[allow(unused_macros)]
 macro_rules! read {
-    ($type:ty) => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).expect("read! was unable to read from stdin");
-            inner.trim().parse::<$type>().expect("read! was unable to parse into the desired type")
-        }
-    };
+    ($type:ty) => {{
+        let mut inner = String::new();
+        std::io::stdin()
+            .read_line(&mut inner)
+            .expect("read! was unable to read from stdin");
+        inner
+            .trim()
+            .parse::<$type>()
+            .expect("read! was unable to parse into the desired type")
+    }};
 }
 
 /**
@@ -102,13 +105,13 @@ Reads a full line of input and returns it as a `&str`.
  */
 #[allow(unused_macros)]
 macro_rules! read_str {
-    () => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).expect("read_str! was unable to read from stdin");
-            inner.trim().to_owned()
-        }
-    };
+    () => {{
+        let mut inner = String::new();
+        std::io::stdin()
+            .read_line(&mut inner)
+            .expect("read_str! was unable to read from stdin");
+        inner.trim().to_owned()
+    }};
 }
 
 /**
@@ -120,17 +123,15 @@ let mut some_numbers: Vec<i64> = read_vec!(i64);
  */
 #[allow(unused_macros)]
 macro_rules! read_vec {
-    ($type:ty) => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).unwrap();
-            inner
-                .trim()
-                .split_whitespace()
-                .map(|s| s.parse::<$type>().unwrap())
-                .collect::<Vec<$type>>()
-        }
-    };
+    ($type:ty) => {{
+        let mut inner = String::new();
+        std::io::stdin().read_line(&mut inner).unwrap();
+        inner
+            .trim()
+            .split_whitespace()
+            .map(|s| s.parse::<$type>().unwrap())
+            .collect::<Vec<$type>>()
+    }};
 }
 
 pub(crate) use read;

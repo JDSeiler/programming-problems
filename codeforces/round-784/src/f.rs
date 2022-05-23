@@ -1,24 +1,52 @@
 pub fn main() {
-    let t = read!(u64);
-    'outer: for i in 0..t {
-        let n = read!(usize);
-        let nums: Vec<usize> = read_vec!(usize);
-        let mut counts: Vec<u64> = Vec::with_capacity(n);
-        counts.resize(n + 1, 0);
+    let t: u64 = read!(u64);
+    for _i in 0..t {
+        let n: usize = read!(usize);
+        let forward_candies: Vec<u64> = read_vec!(u64);
+        let mut backward_candies: Vec<u64> = forward_candies.to_owned();
+        backward_candies.reverse();
 
-        for &v in nums.iter() {
-            let count = counts
-                .get_mut(v)
-                .expect("Invalid index in counts array!?!?");
-            *count += 1;
+        let forward_sums = partial_sums(&forward_candies);
+        let backward_sums = partial_sums(&backward_candies);
 
-            if *count >= 3 {
-                println!("{}", v);
-                continue 'outer;
+        let mut best_found_so_far: Option<usize> =  None;
+
+        forward_sums.iter().enumerate().for_each(|(f_idx, w)| {
+            match backward_sums.binary_search(w) {
+                Ok(b_idx) => {
+                    if pair_valid(f_idx, b_idx, n) && f_idx + b_idx >= best_found_so_far.unwrap_or(0) {
+                        best_found_so_far = Some(f_idx + b_idx);
+                    }
+                },
+                Err(_) => {}
             }
+        });
+
+        match best_found_so_far {
+            // The arrays are 0 indexed, but a valid answer of 0,0 is actually 2 candies eaten
+            Some(ans) => println!("{}", ans+2),
+            None => println!("{}", 0)
         }
-        println!("-1");
     }
+}
+
+fn pair_valid(fidx: usize, bidx: usize, n: usize) -> bool {
+    // Pairs are not allowed to cross
+    fidx < (n - bidx - 1)
+}
+
+fn partial_sums(candy: &Vec<u64>) -> Vec<u64> {
+    let mut partial_sums: Vec<u64> = Vec::with_capacity(candy.len());
+    for (idx, &c) in candy.iter().enumerate() {
+        let total_so_far = match idx {
+            0 => 0,
+            anything_else => *partial_sums.get(anything_else-1).unwrap()
+        };
+
+        partial_sums.push(total_so_far + c);
+    }
+
+    return partial_sums;
 }
 
 /**

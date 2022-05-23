@@ -1,4 +1,3 @@
-
 pub fn main() {
     let t = read!(u64);
     for i in 0..t {
@@ -19,7 +18,7 @@ pub fn main() {
 }
 
 fn count_pairs(s: &str, table: &mut Vec<Vec<u64>>) -> u64 {
-    let (start, end)= str_to_indices(s);
+    let (start, end) = str_to_indices(s);
     let mut row_sum = 0;
     for i in 0..11 {
         row_sum += table[start][i];
@@ -30,14 +29,14 @@ fn count_pairs(s: &str, table: &mut Vec<Vec<u64>>) -> u64 {
         col_sum += table[i][end];
     }
 
-    let count = row_sum + col_sum - (2*table[start][end]);
+    let count = row_sum + col_sum - (2 * table[start][end]);
     table[start][end] -= 1;
     return count;
 }
 
 fn populate_table(strs: &Vec<String>) -> Vec<Vec<u64>> {
     let mut string_table: Vec<Vec<u64>> = Vec::with_capacity(11);
-    string_table.resize_with(11, || { Vec::with_capacity(11) });
+    string_table.resize_with(11, || Vec::with_capacity(11));
 
     for i in 0..11 {
         string_table[i].resize(11, 0)
@@ -71,7 +70,7 @@ fn char_to_index(c: char) -> usize {
         'i' => 8,
         'j' => 9,
         'k' => 10,
-        _ => panic!("Codeforces lied! Got a char that isn't in the range a..k")
+        _ => panic!("Codeforces lied! Got a char that isn't in the range a..k"),
     }
 }
 
@@ -85,13 +84,16 @@ let my_float = read!(f64);
  */
 #[allow(unused_macros)]
 macro_rules! read {
-    ($type:ty) => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).expect("read! was unable to read from stdin");
-            inner.trim().parse::<$type>().expect("read! was unable to parse into the desired type")
-        }
-    };
+    ($type:ty) => {{
+        let mut inner = String::new();
+        std::io::stdin()
+            .read_line(&mut inner)
+            .expect("read! was unable to read from stdin");
+        inner
+            .trim()
+            .parse::<$type>()
+            .expect("read! was unable to parse into the desired type")
+    }};
 }
 
 /**
@@ -99,13 +101,13 @@ Reads a full line of input and returns it as a `&str`.
  */
 #[allow(unused_macros)]
 macro_rules! read_str {
-    () => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).expect("read_str! was unable to read from stdin");
-            inner.trim().to_owned()
-        }
-    };
+    () => {{
+        let mut inner = String::new();
+        std::io::stdin()
+            .read_line(&mut inner)
+            .expect("read_str! was unable to read from stdin");
+        inner.trim().to_owned()
+    }};
 }
 
 /**
@@ -117,17 +119,15 @@ let mut some_numbers: Vec<i64> = read_vec!(i64);
  */
 #[allow(unused_macros)]
 macro_rules! read_vec {
-    ($type:ty) => {
-        {
-            let mut inner = String::new();
-            std::io::stdin().read_line(&mut inner).unwrap();
-            inner
-                .trim()
-                .split_whitespace()
-                .map(|s| s.parse::<$type>().unwrap())
-                .collect::<Vec<$type>>()
-        }
-    };
+    ($type:ty) => {{
+        let mut inner = String::new();
+        std::io::stdin().read_line(&mut inner).unwrap();
+        inner
+            .trim()
+            .split_whitespace()
+            .map(|s| s.parse::<$type>().unwrap())
+            .collect::<Vec<$type>>()
+    }};
 }
 
 pub(crate) use read;
