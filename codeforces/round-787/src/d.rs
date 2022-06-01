@@ -1,12 +1,3 @@
-
-/*
- * Solution is correct (produces the right answer) but times out on the largest test (200,000
- * vertices). It's something with `get_paths` where I'm processing each node more than once.
- * Ideally I'd process each one only once as I find the path, but it's not set up like that.
- *
- * I'll have to do some restructuring to get this fast enough.
- * */
-
 pub fn main() {
     let t = read!(usize);
     for _ in 0..t {
@@ -20,21 +11,24 @@ pub fn main() {
         // parent pointers back to the root, making a path as you go.
         let paths = get_paths(&mut adj_list, &mut layers);
  
+        // Collecting the input in a string first in order to minimize `print` calls
+        // is MANDATORY for this problem
+        let mut path_str = String::with_capacity(n*3);
         // First, print the number of paths
-        println!("{}", paths.len());
+        path_str.push_str(&format!("{}\n", paths.len()));
         for path in paths {
             // Then, print the length of each path, followed by the nodes in the path
-            println!("{}", path.len());
+            path_str.push_str(&format!("{}\n", path.len()));
             for (idx, node) in path.iter().rev().enumerate() {
                 if idx == path.len()-1 {
-                    println!("{}", node);
+                    path_str.push_str(&format!("{}\n", node));
                 } else {
-                    print!("{} ", node);
+                    path_str.push_str(&format!("{} ", node));
                 }
             }
         }
         // After each case, print an extra newline
-        println!();
+        println!("{}", path_str);
     }
 }
  
@@ -106,13 +100,8 @@ fn get_layer_numbers(adj_list: &[Node], root_node: usize) -> Vec<(usize, usize)>
 fn get_paths(adj_list: &mut [Node], layers: &mut Vec<(usize, usize)>) -> Vec<Vec<usize>> {
     let mut paths = Vec::new();
  
-    // I'm a bit concerned about performance, because this loop is going
-    // to process EVERY node. So the performance is going to be O(n * something)?
-    //
-    // I could try replacing the association list with a BTreeSet. That'd let me have
-    // constant time "find max" and worst-case O(log n) removal. That'd make this O(n log n)
-    // instead of O(n^2) worst case? I can't prove it's n^2 but it feels like it.
-    // Except, BTreeSet#pop_last is nightly only...
+    // I was a bit concerned about this function but turns out printing was making 
+    // my code too slow!
     while !layers.is_empty() {
         // Due to the sort order of `layers` this will always be
         // the lowest non-processed leaf
