@@ -1,5 +1,11 @@
 use std::collections::HashSet;
 
+/*
+ * This solution is incorrect. I think I just came up with a heuristic that
+ * happens to work for most cases? Either that or I have a subtle bug, which
+ * considering the quality of this code is highly likely!
+ * */
+
 pub fn main() {
     let t = read!(usize);
     for _ in 0..t {
