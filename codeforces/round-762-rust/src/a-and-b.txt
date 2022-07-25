@@ -1,0 +1,5 @@
+I solved problem A and problem B from this round back in January of 2022.
+See the `round-762`, directory.
+
+This time, I'm skipping A and B and doing what other problems I can in Rust.
+
