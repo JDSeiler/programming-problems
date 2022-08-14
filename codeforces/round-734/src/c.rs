@@ -5,7 +5,7 @@ You're given 200,000 words whose combined length is 400,000.
 Each word consists only of: a,b,c,d, or e. There may be duplicate words.
 A story is a sequence of words that are not necessarily different. A story
 is "interesting" if there is some letter (called the "interesting letter")
-that occurs more than all other letters in the story.
+that occurs more than all other letters in the story COMBINED.
 
 Output the maximum number of words you can use to make an interesting story.
 
@@ -17,10 +17,10 @@ Let us suppose we are told in advance *which* letter occurs more than all the
 other letters in the largest interesting story. Call this magic letter "X"
 How can we compute the size of the story?
 
-Let use rank all the words we were given by how often X occurs compared to the 
-most common letter out of all the OTHER letters in the word. For example:
-`a` has a power of 1 in "aaabbc" because `a` occurs 3 times while `b` occurs twice.
-`b` is the most common out of all the other letters in the word, so we do 3-2=1.
+Let use rank all the words we were given by how often X occurs compared to 
+all the other letters. For example, we would say that the word: "aaabc" has 
+a "power" of 1 with respect to `a` because `a` occurs 3 times, and there are 
+2 other letters. 3-2=1.
 
 Given a story that is interesting w.r.t X, adding a word that is "powerful" w.r.t X
 will always give you a longer story that is interesting w.r.t X. We can use this 
@@ -39,9 +39,9 @@ to include words that are "neutral" (power 0) w.r.t X.
 Lastly, adding a word with a negative power w.r.t X *may* change whether the story is 
 interesting, depending on the composition of the word. Out of all words with negative 
 power w.r.t X, it is optimal to greedily choose those with the largest power first.
-I do not have a proof for this, so this is the most tenuous part of my solution.
-Check if adding the word would make the story uninteresting. If that is the case, discard it,
-otherwise, add it to the story. 
+Because we are only concerned that X occurs more than all other letters COMBINED, there
+is no reason to take anything besides the word with the largest power.
+So, we continue adding words wih negative power until the story would no longer be interesting.
 
 This algorithm for a known X requires the following steps:
 Let n := number of words
@@ -61,6 +61,9 @@ For each letter, simply assume that it's the interesting letter. Then compute
 a solution. For a given interesting letter X, there may be NO words with positive
 power w.r.t X. In this case, the answer is 0. If all letters produce 0, then the 
 overall answer is 0. Otherwise, we output the maximum.
+
+Jordan from the future: This solution works and finishes in 108ms. So it's not "fast code"
+but I suspect that this solution is what the authors intended considering how fast it is.
 */
 
 pub fn main() {
@@ -74,46 +77,48 @@ pub fn main() {
         }
         let mut solutions = [0, 0, 0, 0, 0];
 
-        for c in 'a'..='a' {
-            let mut words_with_power: Vec::<(&String, i32, [i32; 5])> = words.iter().map(|w| {
-                // If we're going to compute the letter frequency for each word we 
-                // may as well store it so we don't have to redo it later.
-                let (power, counts) = compute_relative_power(c, w);
+        for c in 'a'..='e' {
+            // the word, its power w.r.t c, "the counts"
+            // counts[0] is how many times `c` appears
+            // counts[1] is how many time a letter besides `c` appears (len - counts[0])
+            let mut words_with_power: Vec<(&String, i32, [i32; 2])> = words.iter().map(|w| {
+                let (power, counts) =  compute_relative_power(c,w);
                 (w, power, counts)
             }).collect();
 
-            // Sort by the power value in descending order.
-            words_with_power.sort_unstable_by(|a, b| (b.1).cmp(&a.1));
+            // Sort in descending order of power
+            words_with_power.sort_unstable_by(|a, b| b.1.cmp(&a.1));
 
-            // We are guaranteed to get at least 1 word as input, so this is safe.
-            // If the best word we have doesn't have a positive power, we cannot
-            // make an interesting story where `c` is the interesting letter.
+            // If we don't have single powerful word, this `c` cannot produce
+            // an interesting story
             if words_with_power[0].1 <= 0 {
                 continue;
-            } 
+            }
 
             let mut story_size = 0;
-            let mut story_letter_frequency = [0, 0, 0, 0, 0];
-            for (_word, power, counts) in words_with_power.iter() {
-                if *power >= 0 {
-                    story_size += 1;
-                    update_counts_inplace(&mut story_letter_frequency, counts); 
+            // # of c, # of everything else
+            let mut story_counts = [0, 0];
+            for (_w, p, c) in words_with_power {
+                if p >= 0 {
+                   story_size += 1;
+                   story_counts[0] += c[0];
+                   story_counts[1] += c[1];
                 } else {
-                    let mut hypothetical_counts = update_counts(&story_letter_frequency, counts);
-                    
-                    let c_idx = (c.to_digit(16).unwrap() - 10) as usize;
-                    let c_count = hypothetical_counts[c_idx];
-
-                    hypothetical_counts.swap(c_idx, 4);
-                    let [w,x,y,z,_] = hypothetical_counts;
-                    let story_power = c_count - w.max(x).max(y).max(z);
-                    if story_power > 0 {
-                        story_size += 1;
-                        update_counts_inplace(&mut story_letter_frequency, counts); 
+                    // Suppose we added this word to the story...
+                    let hypothetical_counts = [
+                       story_counts[0] + c[0],
+                       story_counts[1] + c[1]
+                    ];
+                    // If we'd still have an interesting story w.r.t `c`, then add it.
+                    if hypothetical_counts[0] > hypothetical_counts[1] {
+                       story_size += 1;
+                       story_counts[0] += c[0];
+                       story_counts[1] += c[1];
                     }
                 }
             }
             let c_idx = (c.to_digit(16).unwrap() - 10) as usize;
+
             solutions[c_idx] = story_size;
         }
 
@@ -123,43 +128,25 @@ pub fn main() {
             if x > acc { x } else { acc }
         }).unwrap();
 
-        println!("{:#?}", solutions);
-
         println!("{}", best_solution);
     }
 }
 
-fn compute_relative_power(l: char, word: &str) -> (i32, [i32; 5]) {
+fn compute_relative_power(l: char, word: &str) -> (i32, [i32; 2]) {
     // a, b, c, d, e
-    let mut counts = [0, 0, 0, 0, 0];
 
-    for c in word.chars() {
-        let idx = (c.to_digit(16).unwrap() - 10) as usize;
-        counts[idx] += 1;
-    }
+    let frequency_of_l = word.chars().fold(0, |acc, c| {
+        if c == l {
+            acc + 1
+        } else {
+            acc
+        }
+    });
 
-    let l_idx = (l.to_digit(16).unwrap() - 10) as usize;
-    let l_count = counts[l_idx];
+    let others = word.len() as i32 - frequency_of_l;
 
-    counts.swap(l_idx, 4);
-    let [w,x,y,z,_] = counts;
-    (l_count - w.max(x).max(y).max(z), counts)
+    (frequency_of_l - others, [frequency_of_l, others])
 }
-
-fn update_counts(acc: &[i32; 5], some_counts: &[i32; 5]) -> [i32; 5] {
-    let mut new_counts = [0, 0, 0, 0, 0];
-    for i in 0..4 {
-        new_counts[i] = acc[i] + some_counts[i];
-    }
-    new_counts
-}
-
-fn update_counts_inplace(acc: &mut [i32; 5], some_counts: &[i32; 5]) {
-    for i in 0..4 {
-        acc[i] += some_counts[i];
-    }
-}
-
 
 /**
  Reads a full line of input and parses it into the value of the specified type.
